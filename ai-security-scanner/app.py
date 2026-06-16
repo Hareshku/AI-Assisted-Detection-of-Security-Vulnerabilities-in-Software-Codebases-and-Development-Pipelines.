@@ -1,3 +1,4 @@
+from scanner.flow_tracker import analyze_flows
 from scanner.analyzer import analyze_file
 import os
 import tempfile
@@ -53,7 +54,24 @@ def scan():
             risk       = calculate_risk_score(features)
             ml_result  = predict_vulnerability(features)
             analysis   = analyze_file(parse_result)
+            flow_result = analyze_flows(parse_result) if features.get("file_type") == "pipeline" else None
 
+            # results.append({
+            #     "filename":        file.filename,
+            #     "file_type":       features.get("file_type"),
+            #     "risk_score":      risk["score"],
+            #     "risk_level":      risk["risk_level"],
+            #     "reasons":         risk["reasons"],
+            #     "ml_prediction":   ml_result.get("prediction"),
+            #     "ml_probability":  ml_result.get("probability", 0),
+            #     "violations":      analysis.get("violations", []),
+            #     "violation_counts": {
+            #         "high":   analysis.get("high", 0),
+            #         "medium": analysis.get("medium", 0),
+            #         "low":    analysis.get("low", 0),
+            #     },
+            # })
+            
             results.append({
                 "filename":        file.filename,
                 "file_type":       features.get("file_type"),
@@ -68,6 +86,7 @@ def scan():
                     "medium": analysis.get("medium", 0),
                     "low":    analysis.get("low", 0),
                 },
+                "flow_analysis": flow_result,
             })
 
         finally:

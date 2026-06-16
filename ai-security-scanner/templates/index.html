@@ -284,6 +284,44 @@
         .violation-item.high   { border-left-color: #ef4444; }
         .violation-item.medium { border-left-color: #f59e0b; }
         .violation-item.low    { border-left-color: #22c55e; }
+
+        .flow-item {
+            background: #0f1117;
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid #dc2626;
+        }
+
+        .flow-type {
+            display: inline-block;
+            background: #dc262622;
+            color: #f87171;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .flow-detail {
+            color: #aaa;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+
+        .flow-command {
+            background: #1a1d2e;
+            color: #888;
+            font-family: monospace;
+            font-size: 0.75rem;
+            padding: 6px 8px;
+            border-radius: 4px;
+            margin-top: 6px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -419,6 +457,20 @@
                   }).join('')
                 : `<div class="no-threat">✅ No rule violations</div>`;
 
+            const flowAnalysis = r.flow_analysis;
+            let flowHtml = '';
+            if (flowAnalysis && flowAnalysis.malicious_flows.length > 0) {
+                flowHtml = flowAnalysis.malicious_flows.map(f => {
+                    return `<div class="flow-item">
+                                <span class="flow-type">${f.flow_type.replace(/_/g, ' ')}</span>
+                                <div class="flow-detail">Stage: <strong>${f.stage}</strong> (${f.canonical_stage})</div>
+                                <div class="flow-detail">${f.evidence}</div>
+                                <div class="flow-command">${f.command}</div>
+                            </div>`;
+                }).join('');
+            } else if (flowAnalysis) {
+                flowHtml = `<div class="no-threat">✅ No malicious flows detected</div>`;
+            }
             html += `
                 <div class="result-card ${level}">
                     <div class="card-header">
@@ -452,6 +504,13 @@
                         <h4>RULE VIOLATIONS (${r.violation_counts ? r.violation_counts.high : 0} HIGH, ${r.violation_counts ? r.violation_counts.medium : 0} MED, ${r.violation_counts ? r.violation_counts.low : 0} LOW)</h4>
                         ${violationsHtml}
                     </div>
+
+                     ${flowAnalysis ? `
+                    <div class="reasons">
+                        <h4>🔀 MALICIOUS FLOWS (Pipeline Code Attack Detection)</h4>
+                        ${flowHtml}
+                    </div>
+                    ` : ''}
                 </div>
             `;
         }

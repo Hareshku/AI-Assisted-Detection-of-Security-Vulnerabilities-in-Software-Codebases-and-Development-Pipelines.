@@ -1,3 +1,4 @@
+from scanner.flow_tracker import analyze_flows
 from scanner.analyzer import analyze_file
 import sys
 import os
@@ -69,7 +70,7 @@ def scan_file(filepath):
             print(Fore.YELLOW + f"     ⚠️  {reason}" + Style.RESET_ALL)
     else:
         print(Fore.GREEN + "     ✅ No threats detected" + Style.RESET_ALL)
-
+    
     print(f"\n  🛡️  Rule Violations: {analysis['total_violations']} "
           f"(🔴 {analysis['high']} HIGH  🟡 {analysis['medium']} MEDIUM  🟢 {analysis['low']} LOW)")
 
@@ -79,7 +80,27 @@ def scan_file(filepath):
                        Fore.YELLOW if v["severity"] == "MEDIUM" else Fore.GREEN
             print(v_color + f"     [{v['rule_id']}] {v['name']}" + Style.RESET_ALL)
 
+    if features.get("file_type") == "pipeline":
+        flow_result = analyze_flows(parse_result)
+        print(f"\n  🔀 Malicious Flows (paper-based): {len(flow_result['malicious_flows'])}")
+        for flow in flow_result["malicious_flows"]:
+            print(Fore.RED + f"     [{flow['flow_type']}] {flow['stage']} stage" + Style.RESET_ALL)
+            print(f"        {flow['evidence']}")
+
     print("─" * 50)
+
+    # if analysis["violations"]:
+    #     for v in analysis["violations"]:
+    #         v_color = Fore.RED if v["severity"] == "HIGH" else \
+    #                    Fore.YELLOW if v["severity"] == "MEDIUM" else Fore.GREEN
+    #         print(v_color + f"     [{v['rule_id']}] {v['name']}" + Style.RESET_ALL)
+        
+    #     if features.get("file_type") == "pipeline":
+    #     flow_result = analyze_flows(parse_result)
+    #     print(f"\n  🔀 Malicious Flows (paper-based): {len(flow_result['malicious_flows'])}")
+    #     for flow in flow_result["malicious_flows"]:
+    #         print(Fore.RED + f"     [{flow['flow_type']}] {flow['stage']} stage" + Style.RESET_ALL)
+    #         print(f"        {flow['evidence']}")
     
 
 def scan_folder(folder_path):
