@@ -51,11 +51,10 @@ def scan():
                 continue
 
             features   = extract_features(parse_result)
-            risk       = calculate_risk_score(features)
             ml_result  = predict_vulnerability(features)
             analysis   = analyze_file(parse_result)
             flow_result = analyze_flows(parse_result) if features.get("file_type") == "pipeline" else None
-
+            risk       = calculate_risk_score(features, flow_result)
             # results.append({
             #     "filename":        file.filename,
             #     "file_type":       features.get("file_type"),
